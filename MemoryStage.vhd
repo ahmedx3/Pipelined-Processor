@@ -6,20 +6,12 @@ ENTITY MemoryStage IS
         PORT (
         -- INPUTS
         CLK : IN STD_LOGIC;
-        PC_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         Rsrc_value_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         Rdst_value_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-        Rsrc_index_IN : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-        Rdst_index_IN : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
         Control_Signals_IN : IN STD_LOGIC_VECTOR(20 DOWNTO 0);
         ALU_Output_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         -- OUTPUTS
-        PC_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-        SP_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-        Rdst_index_OUT : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
-        ALU_Output_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-        MemOutput_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-        Control_Signals_OUT : OUT STD_LOGIC_VECTOR(20 DOWNTO 0)
+        MemOutput_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
         );
 END MemoryStage;
 
@@ -105,11 +97,6 @@ BEGIN
         END PROCESS;
 
         -- Send Outputs to Next Stage Buffer
-        PC_OUT <= PC_IN;
-        SP_OUT <= SP;
-        Rdst_index_OUT <= Rdst_index_IN;
-        ALU_Output_OUT <= ALU_Output_IN;
         MemOutput_OUT <= Data_From_Memory;
-        Control_Signals_OUT <= Control_Signals_IN;
 
 END arch_MemoryStage;
