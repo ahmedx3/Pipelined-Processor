@@ -21,7 +21,7 @@ ARCHITECTURE arch_MemoryStage OF MemoryStage IS
     GENERIC (N : INTEGER := 16; SIZE :INTEGER := 1000000000);
         PORT (
             CLK : IN STD_LOGIC;
-            readOrWrite : IN STD_LOGIC;
+            WriteOrRead : IN STD_LOGIC;
             Memory_Enable : IN STD_LOGIC;
             address : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
             data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
