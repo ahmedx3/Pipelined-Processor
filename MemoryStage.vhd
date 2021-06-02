@@ -7,7 +7,6 @@ ENTITY MemoryStage IS
         -- INPUTS
         CLK : IN STD_LOGIC;
         PC_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-        SP_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         Rsrc_value_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         Rdst_value_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         Rsrc_index_IN : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -40,6 +39,7 @@ ARCHITECTURE arch_MemoryStage OF MemoryStage IS
 
     SIGNAL readOrWrite, Memory_Enable : STD_LOGIC;
     SIGNAL Address, Data_From_Memory, Data_To_Memory : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL SP : STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL MEM_WRITE_SIGNAL, MEM_READ_SIGNAL, ALU_SP_MEMORY_ADDRESS: STD_LOGIC;
     
 BEGIN
@@ -69,7 +69,7 @@ BEGIN
                             Memory_Enable <= '1';
                             
                             -- ???
-                            Address <= SP_IN;
+                            Address <= SP;
                         -- ALU Output is the Memory Address
                         ELSE 
                             --Send Signals to Memory to Read
@@ -87,7 +87,7 @@ BEGIN
                             Memory_Enable <= '1';
                             
                             -- ???
-                            Address <= SP_IN;
+                            Address <= SP;
                             Data_To_Memory <= Rsrc_value_IN;
                         -- ALU Output is the Memory Address
                         ELSE 
@@ -106,7 +106,7 @@ BEGIN
 
         -- Send Outputs to Next Stage Buffer
         PC_OUT <= PC_IN;
-        SP_OUT <= SP_IN;
+        SP_OUT <= SP;
         Rdst_index_OUT <= Rdst_index_IN;
         ALU_Output_OUT <= ALU_Output_IN;
         MemOutput_OUT <= Data_From_Memory;

@@ -6,9 +6,7 @@ ENTITY FetchStage IS
         PORT (
         CLK : IN STD_LOGIC;
         PC_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-        SP_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         PC_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-        SP_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
         INSTRUCTION : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
         IMMEDIATE_VALUE : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
         );
@@ -46,7 +44,6 @@ BEGIN
 
         -- Send Outputs to Next Stage Buffer
         PC_OUT <= PC_IN;
-        SP_OUT <= SP_IN;
         INSTRUCTION <= Data_From_Memory(31 DOWNTO 16);
         IMMEDIATE_VALUE <= Data_From_Memory(15 DOWNTO 0);
 
