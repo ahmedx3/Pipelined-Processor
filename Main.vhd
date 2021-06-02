@@ -35,7 +35,8 @@ COMPONENT FetchStage IS
         PC_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         PC_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
         INSTRUCTION : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-        IMMEDIATE_VALUE : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
+        IMMEDIATE_VALUE : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
+        TWO_ONE_INSTRUCTION: OUT STD_LOGIC
         );
 END COMPONENT;
 
@@ -158,6 +159,7 @@ END COMPONENT;
 -- Fetch Stage
 SIGNAL PC_IF : STD_LOGIC_VECTOR(31 DOWNTO 0);
 SIGNAL INSTRUCTION_IF, IMMEDIATE_VALUE_IF  : STD_LOGIC_VECTOR(15 DOWNTO 0);
+SIGNAL TWO_ONE_INSTRUCTION: STD_LOGIC;
  
 -- IF/ID
 SIGNAL BUFFER_WRITE_ENABLE: STD_LOGIC;
@@ -206,7 +208,8 @@ BEGIN
         PC,
         PC_IF,
         INSTRUCTION_IF,
-        IMMEDIATE_VALUE_IF
+        IMMEDIATE_VALUE_IF,
+        TWO_ONE_INSTRUCTION
     );
 
     IF_ID_MAP : IF_ID  PORT MAP (
@@ -300,10 +303,16 @@ BEGIN
     ----------------------
     OUTPUT_PORT <= InputBus_WB WHEN PORT_WRITE_ENABLE = '1' else x"00000000";
 
-    PROCESS (RST)
+    PROCESS (RST, CLK)
     BEGIN
         IF RST = '1' THEN
             PC <= x"00000000";
+        ELSIF CLK = '0' THEN
+            IF TWO_ONE_INSTRUCTION = '0' THEN
+                PC <= std_logic_vector(to_unsigned(to_integer(unsigned(PC)) + 2,PC'LENGTH ));
+            ELSE
+                PC <= std_logic_vector(to_unsigned(to_integer(unsigned(PC)) + 1,PC'LENGTH ));
+            END IF;
         END IF;
 
     END PROCESS;
