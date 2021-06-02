@@ -57,3 +57,6 @@ run
 force -freeze sim:/alu/SHIFT 00011 0
 force -freeze sim:/alu/SEL 1111 0
 run
+force -freeze sim:/alu/B 10#536870932 0
+force -freeze sim:/alu/SEL 1110 0
+run

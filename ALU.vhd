@@ -56,8 +56,10 @@ BEGIN
         ELSE ALU_OUT;
 
     FLAG(0) <=  CARRY_OUT   WHEN (SEL = b"1010" OR SEL = b"1011" OR SEL = b"0101" OR SEL = b"0110") AND FLAG_EN = '1'
-        ELSE    B(N-1)      WHEN (SEL = b"1000" OR SEL = b"1110") AND FLAG_EN = '1'
-        ELSE    B(0)        WHEN (SEL = b"1001" OR SEL = b"1111") AND FLAG_EN = '1'
+        ELSE    B(N-1)      WHEN SEL = b"1000" AND FLAG_EN = '1'
+        ELSE    B(0)        WHEN SEL = b"1001" AND FLAG_EN = '1'
+        ELSE    B(N-SH)     WHEN SEL = b"1110" AND FLAG_EN = '1' AND SH /= 0
+        ELSE    B(SH-1)     WHEN SEL = b"1111" AND FLAG_EN = '1'
         ELSE    '1'         WHEN SEL = b"0001" AND FLAG_EN = '1'
         ELSE    '0'         WHEN RST = '1' OR (SEL = b"0010" AND FLAG_EN = '1')
         ELSE    FLAG(0);
