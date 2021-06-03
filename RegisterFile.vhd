@@ -19,7 +19,7 @@ BEGIN
 	BEGIN
 		IF RST = '1' THEN
             REGISTERS <= (OTHERS => X"00000000");
-		ELSIF rising_edge(CLK) AND ENABLE = '1' THEN
+		ELSIF FALLING_EDGE(CLK) AND ENABLE = '1' THEN
         REGISTERS(to_integer(unsigned( writeIndex ))) <= InputBus;
 		END IF;
 	END PROCESS;

@@ -11,11 +11,11 @@ END ControlUnit;
 ARCHITECTURE CU OF ControlUnit IS
 	SIGNAL temp : std_logic_vector(20 DOWNTO 0) := (OTHERS => '0');
 BEGIN
-	PROCESS(clk, RST) IS
+	PROCESS(instruction, RST) IS
 	BEGIN
 		IF (RST = '1') THEN
 			temp <= (OTHERS => '0');
-		ELSIF rising_edge(clk) THEN
+		ELSE
 			-- ===========================================
 			-- =============== NO OPERANDS ===============
 			-- ===========================================

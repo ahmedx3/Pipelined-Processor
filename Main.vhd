@@ -19,7 +19,7 @@ ARCHITECTURE arch_main OF Main IS
 ----------------------
 ----------------------
 
-SIGNAL PC : STD_LOGIC_VECTOR(31 DOWNTO 0);
+SIGNAL PC, SP : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 
 
@@ -51,7 +51,7 @@ END COMPONENT;
 
 COMPONENT ExecutionStage IS
 	PORT (
-		RST : IN STD_LOGIC;
+		CLK, RST : IN STD_LOGIC;
 		RSRC_VAL, RDST_VAL, IN_PORT  : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         RSRC_SHIFT : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
         IMMEDIATE : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
@@ -66,9 +66,11 @@ COMPONENT MemoryStage IS
         CLK, RST : IN STD_LOGIC;
         Rsrc_value_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         Rdst_value_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+        SP_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         Control_Signals_IN : IN STD_LOGIC_VECTOR(20 DOWNTO 0);
         ALU_Output_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         -- OUTPUTS
+        SP_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
         MemOutput_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
     );
 END COMPONENT;
@@ -183,7 +185,7 @@ SIGNAL CTRL_SIG_OUT_ID_EX : STD_LOGIC_VECTOR(20 DOWNTO 0):= (OTHERS => '0');
 SIGNAL ALU_OUT_EX : STD_LOGIC_VECTOR(31 DOWNTO 0):= (OTHERS => '0');
  
 -- EX/MEM
-SIGNAL PC_EX_MEM, RSRC_VAL_OUT_EX_MEM, RDST_VAL_OUT_EX_MEM, ALU_OUT_EX_MEM: STD_LOGIC_VECTOR(31 DOWNTO 0):= (OTHERS => '0');
+SIGNAL PC_EX_MEM, RSRC_VAL_OUT_EX_MEM, RDST_VAL_OUT_EX_MEM, ALU_OUT_EX_MEM, SP_OUT: STD_LOGIC_VECTOR(31 DOWNTO 0):= (OTHERS => '0');
 SIGNAL RSRC_INDEX_OUT_EX_MEM, RDST_INDEX_OUT_EX_MEM : STD_LOGIC_VECTOR(4 DOWNTO 0):= (OTHERS => '0');
 SIGNAL CTRL_SIG_OUT_EX_MEM : STD_LOGIC_VECTOR(20 DOWNTO 0):= (OTHERS => '0');
 
@@ -247,7 +249,7 @@ BEGIN
     );
 
     ExecutionStage_PORTMAP: ExecutionStage PORT MAP (
-		RST,
+		CLK, RST,
 		RSRC_VAL_OUT_ID_EX, RDST_VAL_OUT_ID_EX, INPUT_PORT,
         RSRC_INDEX_OUT_ID_EX,
         IMMEDIATE_OUT_ID_EX,
@@ -270,9 +272,11 @@ BEGIN
         CLK, RST,
         RSRC_VAL_OUT_EX_MEM,
         RDST_VAL_OUT_EX_MEM,
+        SP,
         CTRL_SIG_OUT_EX_MEM,
         ALU_OUT_EX_MEM,
         -- OUTPUTS
+        SP_OUT,
         MEM_OUT_MEM
     );
 
@@ -302,11 +306,16 @@ BEGIN
     ----------------------
     ----------------------
     OUTPUT_PORT <= InputBus_WB WHEN PORT_WRITE_ENABLE = '1' else x"00000000";
-
+    -------------------
+    -- NEEDS ATTENTION
+    -------------------
+    SP <= X"00000010" WHEN RST = '1'
+    ELSE SP_OUT;
     PROCESS (RST, CLK)
     BEGIN
         IF RST = '1' THEN
             PC <= x"0000" & INSTRUCTION_IF;
+            SP <= X"00000010";
             BUFFER_WRITE_ENABLE <= '0';
         ELSIF (Clk = '1') then
             BUFFER_WRITE_ENABLE <= '1';
@@ -316,7 +325,7 @@ BEGIN
                 PC <= std_logic_vector(to_unsigned(to_integer(unsigned(PC)) + 2,PC'LENGTH ));
             ELSE
                 PC <= std_logic_vector(to_unsigned(to_integer(unsigned(PC)) + 1,PC'LENGTH ));
-            END IF;
+            END IF;        
         END IF;
 
     END PROCESS;

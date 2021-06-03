@@ -118,9 +118,14 @@ for i, instruction in enumerate(instructionsProcessed):
         code += "0000000000"
         memory[addressArr[i]] = code
     elif(instruction[0] in oneOperand):
-        code += instructionsDict[instruction[0]]
-        code += "00000"
-        code += registersDict[instruction[1]]
+        if (instruction[0] == 'OUT' or instruction[0] == 'PUSH'):
+            code += instructionsDict[instruction[0]]
+            code += registersDict[instruction[1]]
+            code += "00000"
+        else:
+            code += instructionsDict[instruction[0]]
+            code += "00000"
+            code += registersDict[instruction[1]]
         memory[addressArr[i]] = code
     elif(instruction[0] in twoOperand):
         if(instruction[0] in twoWordInstructions):
@@ -148,8 +153,8 @@ for i, instruction in enumerate(instructionsProcessed):
                 memory[addressArr[i]+1] = immediateValue
         elif(instruction[0] in shiftInstructions):
             code += instructionsDict[instruction[0]]
-            code += registersDict[instruction[1]]
             code += format(int(instruction[2], 16),'0>5b')
+            code += registersDict[instruction[1]]
             memory[addressArr[i]] = code
         else:
             code += instructionsDict[instruction[0]]

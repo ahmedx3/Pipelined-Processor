@@ -8,9 +8,11 @@ ENTITY MemoryStage IS
         CLK,RST : IN STD_LOGIC;
         Rsrc_value_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         Rdst_value_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+        SP_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         Control_Signals_IN : IN STD_LOGIC_VECTOR(20 DOWNTO 0);
         ALU_Output_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         -- OUTPUTS
+        SP_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
         MemOutput_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
         );
 END MemoryStage;
@@ -31,7 +33,7 @@ ARCHITECTURE arch_MemoryStage OF MemoryStage IS
 
     SIGNAL readOrWrite, Memory_Enable : STD_LOGIC := '0';
     SIGNAL Address, Data_From_Memory, Data_To_Memory : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
-    SIGNAL SP : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
+    SIGNAL SP : STD_LOGIC_VECTOR(31 DOWNTO 0) := X"00000010";
     SIGNAL MEM_WRITE_SIGNAL, MEM_READ_SIGNAL, ALU_SP_MEMORY_ADDRESS: STD_LOGIC := '0';
     
 BEGIN
@@ -44,61 +46,24 @@ BEGIN
         ALU_SP_MEMORY_ADDRESS <= Control_Signals_IN(10);
 
 
-        -- @TODO CHECK WHICH SIGNALS WRITES WHAT TO WHERE AND READS WHAT TO WHERE
-        PROCESS (CLK, RST) IS
-        BEGIN
-                -- RESET SIGNALS
-                IF RST = '1' THEN
-                Data_From_Memory <= (OTHERS => '0');
-                ELSIF falling_edge(CLK) THEN
-                    Memory_Enable <= '0';
-                END IF;
+        readOrWrite <= '1' WHEN MEM_READ_SIGNAL = '1'
+        ELSE '0' WHEN MEM_WRITE_SIGNAL = '1';
 
-                IF CLK = '1' THEN
-                    IF MEM_READ_SIGNAL = '1' THEN
-                        -- SP is the Memory Address
-                        IF ALU_SP_MEMORY_ADDRESS = '1' THEN
-                            --Send Signals to Memory to Read
-                            readOrWrite <= '0';
-                            Memory_Enable <= '1';
-                            
-                            -- ???
-                            Address <= SP;
-                        -- ALU Output is the Memory Address
-                        ELSE 
-                            --Send Signals to Memory to Read
-                            readOrWrite <= '0';
-                            Memory_Enable <= '1';
-                            
-                            -- ???
-                            Address <= ALU_Output_IN;
-                        END IF;
-                    ELSIF MEM_WRITE_SIGNAL = '1' THEN
-                        -- SP is the Memory Address
-                        IF ALU_SP_MEMORY_ADDRESS = '1' THEN
-                            --Send Signals to Memory to Write
-                            readOrWrite <= '1';
-                            Memory_Enable <= '1';
-                            
-                            -- ???
-                            Address <= SP;
-                            Data_To_Memory <= Rsrc_value_IN;
-                        -- ALU Output is the Memory Address
-                        ELSE 
-                            --Send Signals to Memory to Write
-                            readOrWrite <= '1';
-                            Memory_Enable <= '1';
+        Memory_Enable <= '1' WHEN MEM_READ_SIGNAL = '1' OR MEM_WRITE_SIGNAL = '1'
+        ELSE '0';
 
-                            -- ???
-                            Address <= ALU_Output_IN;
-                            Data_To_Memory <= Rsrc_value_IN;
-                        END IF;
-                    END IF;
-                            
-                END IF;
-        END PROCESS;
+        SP <= std_logic_vector(to_unsigned(to_integer(unsigned(SP_IN)) + 2,SP'LENGTH )) WHEN MEM_READ_SIGNAL = '1' AND  ALU_SP_MEMORY_ADDRESS = '1'
+        ELSE std_logic_vector(to_unsigned(to_integer(unsigned(SP_IN)) - 2,SP'LENGTH )) WHEN MEM_WRITE_SIGNAL = '1' AND  ALU_SP_MEMORY_ADDRESS = '1'
+        ELSE X"00000010" WHEN RST = '1';
 
+        Address <= SP WHEN MEM_READ_SIGNAL = '1' AND  ALU_SP_MEMORY_ADDRESS = '1'
+        ELSE SP_IN WHEN MEM_WRITE_SIGNAL = '1' AND  ALU_SP_MEMORY_ADDRESS = '1'
+        ELSE ALU_Output_IN WHEN  ALU_SP_MEMORY_ADDRESS = '0'
+        ELSE (OTHERS => '0');
+                            
+        Data_To_Memory <= Rsrc_value_IN;
         -- Send Outputs to Next Stage Buffer
-        MemOutput_OUT <= Data_From_Memory;
-
+        MemOutput_OUT <= (OTHERS => '0') WHEN RST = '1'
+        ELSE Data_From_Memory;
+        SP_OUT <= SP;
 END arch_MemoryStage;

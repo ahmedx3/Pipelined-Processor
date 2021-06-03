@@ -5,7 +5,8 @@ use ieee.numeric_std.all;
 
 ENTITY ALU IS
     GENERIC (n : integer:=32);
-    PORT ( A,B: IN STD_LOGIC_VECTOR (n-1 DOWNTO 0);
+    PORT (CLK: IN STD_LOGIC;
+        A,B: IN STD_LOGIC_VECTOR (n-1 DOWNTO 0);
         SEL: IN STD_LOGIC_VECTOR (3 DOWNTO 0);
         SHIFT: IN STD_LOGIC_VECTOR (4 DOWNTO 0);
         FLAG : INOUT STD_LOGIC_VECTOR (2 DOWNTO 0);
@@ -24,8 +25,15 @@ END COMPONENT;
     SIGNAL FIRST, SECOND,ALU_OUT, ADDER_OUT: STD_LOGIC_VECTOR(n-1 DOWNTO 0):=(OTHERS => '0');
     CONSTANT ZERO: STD_LOGIC_VECTOR(n-1 DOWNTO 0):=(OTHERS => '0');
     SIGNAL SH: INTEGER;
+    SIGNAL INTERNAL_FLAG: STD_LOGIC_VECTOR (2 DOWNTO 0):= "000";
 BEGIN
     SH <= to_integer(unsigned( SHIFT ));
+
+    PROCESS (CLK) BEGIN
+        IF RISING_EDGE(CLK) THEN
+            INTERNAL_FLAG <= FLAG;
+        END IF;
+    END PROCESS;
 
     FIRST <= A                  WHEN SEL = b"1010" OR SEL = b"1011"
         ELSE B                  WHEN SEL = b"0101" OR SEL = b"0110"
@@ -46,8 +54,8 @@ BEGIN
         ELSE    ADDER_OUT                                   WHEN SEL = b"0101" OR SEL = b"0110" OR SEL = b"1010" OR SEL = b"1011" OR SEL = b"0111"
         ELSE    A AND B                                     WHEN SEL = b"1100"
         ELSE    A OR  B                                     WHEN SEL = b"1101"
-        ELSE    B(N-2 DOWNTO 0) & FLAG(0)                   WHEN SEL = b"1000"
-        ELSE    FLAG(0) & B(N-1 DOWNTO 1)                   WHEN SEL = b"1001"
+        ELSE    B(N-2 DOWNTO 0) & INTERNAL_FLAG(0)          WHEN SEL = b"1000"
+        ELSE    INTERNAL_FLAG(0) & B(N-1 DOWNTO 1)          WHEN SEL = b"1001"
         ELSE    B(N-SH-1 DOWNTO 0) & ZERO(SH-1 DOWNTO 0)    WHEN SEL = b"1110"
         ELSE    ZERO(SH-1 DOWNTO 0) & B(N-1 DOWNTO SH)      WHEN SEL = b"1111"
         ELSE    (OTHERS => '0');
@@ -59,7 +67,7 @@ BEGIN
         ELSE    B(N-1)      WHEN SEL = b"1000" AND FLAG_EN = '1'
         ELSE    B(0)        WHEN SEL = b"1001" AND FLAG_EN = '1'
         ELSE    B(N-SH)     WHEN SEL = b"1110" AND FLAG_EN = '1' AND SH /= 0
-        ELSE    B(SH-1)     WHEN SEL = b"1111" AND FLAG_EN = '1'
+        ELSE    B(SH-1)     WHEN SEL = b"1111" AND FLAG_EN = '1' AND SH /= 0
         ELSE    '1'         WHEN SEL = b"0001" AND FLAG_EN = '1'
         ELSE    '0'         WHEN RST = '1' OR (SEL = b"0010" AND FLAG_EN = '1')
         ELSE    FLAG(0);
