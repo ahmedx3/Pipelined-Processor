@@ -5,7 +5,7 @@ USE IEEE.numeric_std.ALL;
 ENTITY RAM IS
         GENERIC (N : INTEGER := 16; SIZE :INTEGER := 1000);
         PORT (
-                clk : IN STD_LOGIC;
+                clk,RST : IN STD_LOGIC;
                 WriteOrRead : IN STD_LOGIC;
                 Memory_Enable : IN STD_LOGIC;
                 address : IN STD_LOGIC_VECTOR( (2*N - 1) DOWNTO 0);
@@ -17,12 +17,14 @@ END RAM;
 ARCHITECTURE arch_ram OF ram IS
 
         TYPE ram_type IS ARRAY(0 TO SIZE) OF STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        SIGNAL ram : ram_type := (0 => "0000000000000111",1 => "0000000000000011",others => "0000000000000001");
+        SIGNAL ram : ram_type := (others => "0000000000000000");
 
 BEGIN
-        PROCESS (clk) IS
+        PROCESS (clk, RST) IS
         BEGIN
-                IF falling_edge(clk) AND Memory_Enable = '1' THEN
+                IF RST = '1' THEN
+                        data_out <= ram(0)& ram(1);
+                ELSIF falling_edge(clk) AND Memory_Enable = '1' THEN
                         IF WriteOrRead = '0' THEN
                                 ram(to_integer(unsigned(address))) <= data_in(31 DOWNTO 16);
                                 ram(to_integer(unsigned(address)) + 1) <= data_in(15 DOWNTO 0);

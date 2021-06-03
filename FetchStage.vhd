@@ -4,7 +4,7 @@ USE IEEE.numeric_std.ALL;
 
 ENTITY FetchStage IS
         PORT (
-        CLK : IN STD_LOGIC;
+        CLK, RST : IN STD_LOGIC;
         PC_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         PC_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
         INSTRUCTION : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
@@ -18,7 +18,7 @@ ARCHITECTURE arch_FetchStage OF FetchStage IS
     component RAM IS
     GENERIC (N : INTEGER := 16; SIZE :INTEGER := 10000);
         PORT (
-            CLK : IN STD_LOGIC;
+            CLK, RST : IN STD_LOGIC;
             WriteOrRead : IN STD_LOGIC;
             Memory_Enable : IN STD_LOGIC;
             address : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -27,12 +27,12 @@ ARCHITECTURE arch_FetchStage OF FetchStage IS
             );
     END component;
 
-    SIGNAL WriteOrRead, Memory_Enable, TEMP_TWO_ONE_INSTRUCTION : STD_LOGIC;
-    SIGNAL Address, Data_From_Memory, Data_To_Memory : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL WriteOrRead, Memory_Enable, TEMP_TWO_ONE_INSTRUCTION : STD_LOGIC := '0';
+    SIGNAL Address, Data_From_Memory, Data_To_Memory : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
     
     
 BEGIN
-        INSTRUCTION_RAM:   RAM GENERIC MAP(16,1000000) PORT MAP(CLK, WriteOrRead, Memory_Enable, Address, Data_From_Memory, Data_To_Memory );
+        INSTRUCTION_RAM:   RAM GENERIC MAP(16,1000000) PORT MAP(CLK, RST, WriteOrRead, Memory_Enable, Address, Data_From_Memory, Data_To_Memory );
         
         PROCESS (CLK) IS
         BEGIN
