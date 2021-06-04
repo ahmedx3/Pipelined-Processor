@@ -13,6 +13,10 @@ sim:/main/ExecutionStage_PORTMAP/FLAG \
 sim:/main/ALU_OUT_EX \
 sim:/main/ALU_OUT_EX_MEM \
 sim:/main/ALU_OUT_MEM_WB \
+sim:/main/DATA_FORWARD_EN_RDST \
+sim:/main/DATA_FORWARD_EN_RSRC \
+sim:/main/DATA_FORWARD_OUT_RDST \
+sim:/main/DATA_FORWARD_OUT_RSRC \
 sim:/main/BUFFER_WRITE_ENABLE \
 sim:/main/IF_ID_MAP/WRITE_ENABLE \
 sim:/main/IF_ID_MAP/INSTRUCTION_IN \

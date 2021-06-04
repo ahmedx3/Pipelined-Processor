@@ -1,5 +1,5 @@
-exec python ./Assembler/Assembler.py ./Assembler/test1.asm
-#exec python ./Assembler/Assembler.py ./Assembler/OneOperand.asm
+#exec python ./Assembler/Assembler.py ./Assembler/test1.asm
+exec python ./Assembler/Assembler.py ./Assembler/OneOperand.asm
 vsim -gui work.main
 mem load -i {./memory.mem} /main/FetchStage_PORTMAP/INSTRUCTION_RAM/RAM
 add wave  \
@@ -57,7 +57,7 @@ force -freeze sim:/main/CLK 1 0, 0 {50 ps} -r 100
 force -freeze sim:/main/RST 1 0
 run
 force -freeze sim:/main/RST 0 0
-run 900
+run 700
 force -freeze sim:/main/INPUT_PORT 16#5 0
 run 100
 force -freeze sim:/main/INPUT_PORT 16#10 0
