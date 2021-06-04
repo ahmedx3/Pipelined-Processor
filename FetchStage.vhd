@@ -6,10 +6,11 @@ ENTITY FetchStage IS
         PORT (
         CLK, RST : IN STD_LOGIC;
         PC_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-        PC_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+        PC_OUT, NEXT_PC : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
         INSTRUCTION : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
         IMMEDIATE_VALUE : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-        TWO_ONE_INSTRUCTION: OUT STD_LOGIC
+        -- TWO_ONE_INSTRUCTION: OUT STD_LOGIC
+        PC_WR_EN: OUT STD_LOGIC
         );
 END FetchStage;
 
@@ -41,21 +42,17 @@ BEGIN
                     WriteOrRead <= '1';
                     Memory_Enable <= '1';
                     Address <= PC_IN;
-                END IF;   
-                IF CLK = '0' THEN
-                    -- IADD LDM LDD STD
-                    IF (Data_From_Memory(31 DOWNTO 26) = "011010") OR (Data_From_Memory(31 DOWNTO 26) = "011101") OR (Data_From_Memory(31 DOWNTO 26) = "011110") OR (Data_From_Memory(31 DOWNTO 26) = "011111") THEN
-                        TEMP_TWO_ONE_INSTRUCTION <= '0';
-                    ELSE
-                        TEMP_TWO_ONE_INSTRUCTION <= '1';
-                    END IF;
-                    		 
                 END IF;
                 
         END PROCESS;
 
         -- Send Signal 3ashan modelsim beyet2emes
-        TWO_ONE_INSTRUCTION <= TEMP_TWO_ONE_INSTRUCTION;
+        NEXT_PC <= std_logic_vector(to_unsigned(to_integer(unsigned(PC_IN)) + 2,NEXT_PC'LENGTH )) WHEN Data_From_Memory(31 DOWNTO 26) = "011010" OR Data_From_Memory(31 DOWNTO 26) = "011101" OR Data_From_Memory(31 DOWNTO 26) = "011110" OR Data_From_Memory(31 DOWNTO 26) = "011111" 
+        ELSE x"0000" & Data_From_Memory(31 DOWNTO 16) WHEN RST = '1'
+        ELSE std_logic_vector(to_unsigned(to_integer(unsigned(PC_IN)) + 1,NEXT_PC'LENGTH ));
+
+        -- DEPENDS ON HAZARDS
+        PC_WR_EN <= '1';
 
         -- Send Outputs to Next Stage Buffer
         PC_OUT <= PC_IN;

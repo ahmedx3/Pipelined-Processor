@@ -12,6 +12,7 @@ ENTITY MemoryStage IS
         Control_Signals_IN : IN STD_LOGIC_VECTOR(20 DOWNTO 0);
         ALU_Output_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         -- OUTPUTS
+        SP_ENABLE : OUT STD_LOGIC;
         SP_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
         MemOutput_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
         );
@@ -52,13 +53,17 @@ BEGIN
         Memory_Enable <= '1' WHEN MEM_READ_SIGNAL = '1' OR MEM_WRITE_SIGNAL = '1'
         ELSE '0';
 
-        SP <= std_logic_vector(to_unsigned(to_integer(unsigned(SP_IN)) + 2,SP'LENGTH )) WHEN MEM_READ_SIGNAL = '1' AND  ALU_SP_MEMORY_ADDRESS = '1'
-        ELSE std_logic_vector(to_unsigned(to_integer(unsigned(SP_IN)) - 2,SP'LENGTH )) WHEN MEM_WRITE_SIGNAL = '1' AND  ALU_SP_MEMORY_ADDRESS = '1'
+        SP_ENABLE <= '1' WHEN ALU_SP_MEMORY_ADDRESS = '1'
+        ELSE '0';
+
+        SP <= std_logic_vector(to_unsigned(to_integer(unsigned(SP_IN)) + 2,SP'LENGTH )) WHEN MEM_READ_SIGNAL = '1' AND  ALU_SP_MEMORY_ADDRESS = '1' AND CLK = '1'
+        ELSE std_logic_vector(to_unsigned(to_integer(unsigned(SP_IN)) - 2,SP'LENGTH )) WHEN MEM_WRITE_SIGNAL = '1' AND  ALU_SP_MEMORY_ADDRESS = '1' AND CLK = '1'
+ 
         ELSE X"00000010" WHEN RST = '1';
 
         Address <= SP WHEN MEM_READ_SIGNAL = '1' AND  ALU_SP_MEMORY_ADDRESS = '1'
-        ELSE SP_IN WHEN MEM_WRITE_SIGNAL = '1' AND  ALU_SP_MEMORY_ADDRESS = '1'
-        ELSE ALU_Output_IN WHEN  ALU_SP_MEMORY_ADDRESS = '0'
+        ELSE SP_IN WHEN MEM_WRITE_SIGNAL = '1' AND  ALU_SP_MEMORY_ADDRESS = '1'  
+        ELSE ALU_Output_IN WHEN  ALU_SP_MEMORY_ADDRESS = '0' AND (MEM_READ_SIGNAL = '1' OR MEM_WRITE_SIGNAL = '1')
         ELSE (OTHERS => '0');
                             
         Data_To_Memory <= Rsrc_value_IN;

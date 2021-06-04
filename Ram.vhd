@@ -20,17 +20,15 @@ ARCHITECTURE arch_ram OF ram IS
         SIGNAL ram : ram_type := (others => "0000000000000000");
 
 BEGIN
-        PROCESS (clk, RST) IS
-        BEGIN
-                IF RST = '1' THEN
-                        data_out <= ram(0)& ram(1);
-                ELSIF falling_edge(clk) AND Memory_Enable = '1' THEN
-                        IF WriteOrRead = '0' THEN
-                                ram(to_integer(unsigned(address))) <= data_in(31 DOWNTO 16);
-                                ram(to_integer(unsigned(address)) + 1) <= data_in(15 DOWNTO 0);
-                        ELSE
-                                data_out <= ram(to_integer(unsigned(address))) & ram(to_integer(unsigned(address)) + 1);
-                        END IF;
-                END IF;
-        END PROCESS;
+    PROCESS (clk) IS
+    BEGIN
+        IF falling_edge(clk) AND Memory_Enable = '1' THEN
+            IF WriteOrRead = '0' THEN
+                ram(to_integer(unsigned(address))) <= data_in(31 DOWNTO 16);
+                ram(to_integer(unsigned(address)) + 1) <= data_in(15 DOWNTO 0);
+            END IF;
+        END IF;
+    END PROCESS;
+    data_out <= ram(0)& ram(1) WHEN RST = '1'
+    ELSE ram(to_integer(unsigned(address))) & ram(to_integer(unsigned(address)) + 1);
 END arch_ram;

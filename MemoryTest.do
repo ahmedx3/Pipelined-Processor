@@ -5,6 +5,8 @@ add wave  \
 sim:/main/CLK \
 sim:/main/RST \
 -radix hexadecimal sim:/main/PC \
+sim:/main/NEXT_PC \
+sim:/main/SP_IN \
 sim:/main/MemoryStage_PORTMAP/SP \
 sim:/main/MemoryStage_PORTMAP/Memory_Enable \
 sim:/main/MemoryStage_PORTMAP/Data_To_Memory \
@@ -54,7 +56,6 @@ sim:/main/RSRC_INDEX_OUT_ID_EX \
 sim:/main/RSRC_VALUE_OUT_ID \
 sim:/main/RSRC_VAL_OUT_EX_MEM \
 sim:/main/RSRC_VAL_OUT_ID_EX \
-sim:/main/TWO_ONE_INSTRUCTION \
 sim:/main/writeIndex_WB
 
 force -freeze sim:/main/CLK 1 0, 0 {50 ps} -r 100
@@ -68,3 +69,5 @@ force -freeze sim:/main/INPUT_PORT 16#FFFF 0
 run 100
 force -freeze sim:/main/INPUT_PORT 16#F320 0
 run 100
+force -freeze sim:/main/INPUT_PORT 16#10 0
+run 500

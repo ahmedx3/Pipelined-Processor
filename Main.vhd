@@ -33,10 +33,10 @@ COMPONENT FetchStage IS
         PORT (
         CLK, RST : IN STD_LOGIC;
         PC_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-        PC_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+        PC_OUT, NEXT_PC : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
         INSTRUCTION : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
         IMMEDIATE_VALUE : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-        TWO_ONE_INSTRUCTION: OUT STD_LOGIC
+        PC_WR_EN: OUT STD_LOGIC
         );
 END COMPONENT;
 
@@ -70,6 +70,7 @@ COMPONENT MemoryStage IS
         Control_Signals_IN : IN STD_LOGIC_VECTOR(20 DOWNTO 0);
         ALU_Output_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         -- OUTPUTS
+        SP_ENABLE : OUT STD_LOGIC;
         SP_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
         MemOutput_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
     );
@@ -142,6 +143,13 @@ END COMPONENT;
 ----------------------
 ----------------------
 
+COMPONENT mREGISTER IS
+	GENERIC (N : INTEGER := 32);
+	PORT (
+		CLK, RST, ENABLE : IN STD_LOGIC;
+		D : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+		Q : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0));
+END COMPONENT;
 
 COMPONENT RegisterFile IS
 	GENERIC (N : INTEGER := 32);
@@ -159,9 +167,10 @@ END COMPONENT;
 ----------------------
 
 -- Fetch Stage
-SIGNAL PC_IF : STD_LOGIC_VECTOR(31 DOWNTO 0):= (OTHERS => '0');
+SIGNAL PC_IF, NEXT_PC : STD_LOGIC_VECTOR(31 DOWNTO 0):= (OTHERS => '0');
 SIGNAL INSTRUCTION_IF, IMMEDIATE_VALUE_IF  : STD_LOGIC_VECTOR(15 DOWNTO 0) := (OTHERS => '0');
-SIGNAL TWO_ONE_INSTRUCTION: STD_LOGIC := '0';
+-- SIGNAL TWO_ONE_INSTRUCTION: STD_LOGIC := '0';
+SIGNAL PC_ENABLE: STD_LOGIC := '0';
  
 -- IF/ID
 SIGNAL BUFFER_WRITE_ENABLE: STD_LOGIC := '0';
@@ -185,9 +194,10 @@ SIGNAL CTRL_SIG_OUT_ID_EX : STD_LOGIC_VECTOR(20 DOWNTO 0):= (OTHERS => '0');
 SIGNAL ALU_OUT_EX : STD_LOGIC_VECTOR(31 DOWNTO 0):= (OTHERS => '0');
  
 -- EX/MEM
-SIGNAL PC_EX_MEM, RSRC_VAL_OUT_EX_MEM, RDST_VAL_OUT_EX_MEM, ALU_OUT_EX_MEM, SP_OUT: STD_LOGIC_VECTOR(31 DOWNTO 0):= (OTHERS => '0');
+SIGNAL PC_EX_MEM, RSRC_VAL_OUT_EX_MEM, RDST_VAL_OUT_EX_MEM, ALU_OUT_EX_MEM, SP_IN, SP_OUT: STD_LOGIC_VECTOR(31 DOWNTO 0):= (OTHERS => '0');
 SIGNAL RSRC_INDEX_OUT_EX_MEM, RDST_INDEX_OUT_EX_MEM : STD_LOGIC_VECTOR(4 DOWNTO 0):= (OTHERS => '0');
 SIGNAL CTRL_SIG_OUT_EX_MEM : STD_LOGIC_VECTOR(20 DOWNTO 0):= (OTHERS => '0');
+SIGNAL SP_ENABLE : STD_LOGIC := '0';
 
 -- Memory Stage
 SIGNAL MEM_OUT_MEM : STD_LOGIC_VECTOR(31 DOWNTO 0):= (OTHERS => '0');
@@ -208,10 +218,10 @@ BEGIN
     FetchStage_PORTMAP: FetchStage PORT MAP(
         CLK, RST,
         PC,
-        PC_IF,
+        PC_IF, NEXT_PC,
         INSTRUCTION_IF,
         IMMEDIATE_VALUE_IF,
-        TWO_ONE_INSTRUCTION
+        PC_ENABLE
     );
 
     IF_ID_MAP : IF_ID  PORT MAP (
@@ -272,10 +282,11 @@ BEGIN
         CLK, RST,
         RSRC_VAL_OUT_EX_MEM,
         RDST_VAL_OUT_EX_MEM,
-        SP,
+        SP_IN,
         CTRL_SIG_OUT_EX_MEM,
         ALU_OUT_EX_MEM,
         -- OUTPUTS
+        SP_ENABLE,
         SP_OUT,
         MEM_OUT_MEM
     );
@@ -309,23 +320,18 @@ BEGIN
     -------------------
     -- NEEDS ATTENTION
     -------------------
-    SP <= X"00000010" WHEN RST = '1'
-    ELSE SP_OUT;
+    -- SP <= X"00000010" WHEN RST = '1'
+    -- ELSE SP_OUT;
+
+	SP0: mREGISTER PORT MAP(CLK, RST, SP_ENABLE, SP_OUT, SP_IN);
+	PC0: mREGISTER PORT MAP(CLK, RST, PC_ENABLE, NEXT_PC, PC);
+
     PROCESS (RST, CLK)
     BEGIN
         IF RST = '1' THEN
-            PC <= x"0000" & INSTRUCTION_IF;
-            SP <= X"00000010";
             BUFFER_WRITE_ENABLE <= '0';
         ELSIF (Clk = '1') then
-            BUFFER_WRITE_ENABLE <= '1';
-        ELSIF CLK = '0' THEN
-            -- BUFFER_WRITE_ENABLE <= '0';
-            IF TWO_ONE_INSTRUCTION = '0' THEN
-                PC <= std_logic_vector(to_unsigned(to_integer(unsigned(PC)) + 2,PC'LENGTH ));
-            ELSE
-                PC <= std_logic_vector(to_unsigned(to_integer(unsigned(PC)) + 1,PC'LENGTH ));
-            END IF;        
+            BUFFER_WRITE_ENABLE <= '1';      
         END IF;
 
     END PROCESS;

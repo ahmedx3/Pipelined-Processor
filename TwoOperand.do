@@ -51,7 +51,6 @@ sim:/main/RSRC_INDEX_OUT_ID_EX \
 sim:/main/RSRC_VALUE_OUT_ID \
 sim:/main/RSRC_VAL_OUT_EX_MEM \
 sim:/main/RSRC_VAL_OUT_ID_EX \
-sim:/main/TWO_ONE_INSTRUCTION \
 sim:/main/writeIndex_WB
 
 force -freeze sim:/main/CLK 1 0, 0 {50 ps} -r 100
