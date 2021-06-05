@@ -1,4 +1,4 @@
-exec python ./Assembler/Assembler.py ./Assembler/Memory.asm
+exec python ./Assembler/Assembler.py ./Assembler/Branch.asm
 vsim -gui work.main
 mem load -i {./memory.mem} /main/FetchStage_PORTMAP/INSTRUCTION_RAM/RAM
 add wave  \
@@ -6,6 +6,8 @@ sim:/main/CLK \
 sim:/main/RST \
 -radix hexadecimal sim:/main/PC \
 sim:/main/LOAD_USE_STALL \
+sim:/main/BRANCH \
+sim:/main/BRANCH_VALUE \
 sim:/main/NEXT_PC \
 sim:/main/SP_IN \
 sim:/main/MemoryStage_PORTMAP/SP \
@@ -61,18 +63,18 @@ sim:/main/RSRC_INDEX_OUT_ID_EX \
 sim:/main/RSRC_VALUE_OUT_ID \
 sim:/main/RSRC_VAL_OUT_EX_MEM \
 sim:/main/RSRC_VAL_OUT_ID_EX \
-sim:/main/writeIndex_WB
+sim:/main/writeIndex_WB 
 
 force -freeze sim:/main/CLK 1 0, 0 {50 ps} -r 100
 force -freeze sim:/main/RST 1 0
 run
 force -freeze sim:/main/RST 0 0
 run 200
-force -freeze sim:/main/INPUT_PORT 16#19 0
+force -freeze sim:/main/INPUT_PORT 16#30 0
 run 100
-force -freeze sim:/main/INPUT_PORT 16#FFFF 0
+force -freeze sim:/main/INPUT_PORT 16#50 0
 run 100
-force -freeze sim:/main/INPUT_PORT 16#F320 0
+force -freeze sim:/main/INPUT_PORT 16#100 0
 run 100
-force -freeze sim:/main/INPUT_PORT 16#10 0
+force -freeze sim:/main/INPUT_PORT 16#300 0
 run 500

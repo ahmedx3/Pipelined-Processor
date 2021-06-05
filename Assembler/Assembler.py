@@ -115,16 +115,16 @@ for i, instruction in enumerate(instructionsProcessed):
     code = ""
     if(instruction[0] in noOperand):
         code += instructionsDict[instruction[0]]
-        code += "0000000000"
+        code += "1111111111"
         memory[addressArr[i]] = code
     elif(instruction[0] in oneOperand):
         if (instruction[0] == 'OUT' or instruction[0] == 'PUSH'):
             code += instructionsDict[instruction[0]]
             code += registersDict[instruction[1]]
-            code += "00000"
+            code += "11111"
         else:
             code += instructionsDict[instruction[0]]
-            code += "00000"
+            code += "11111"
             code += registersDict[instruction[1]]
         memory[addressArr[i]] = code
     elif(instruction[0] in twoOperand):
@@ -146,7 +146,7 @@ for i, instruction in enumerate(instructionsProcessed):
             else:
                 # for IADD and LDM
                 code += instructionsDict[instruction[0]]
-                code += "00000"
+                code += "11111"
                 code += registersDict[instruction[1]]
                 memory[addressArr[i]] = code
                 immediateValue = format(int(instruction[2], 16),'0>16b')
