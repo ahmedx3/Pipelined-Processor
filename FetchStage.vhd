@@ -6,12 +6,11 @@ ENTITY FetchStage IS
         PORT (
         CLK, RST, LOAD_USE_STALL : IN STD_LOGIC;
         PC_IN : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-        BRANCH : IN STD_LOGIC;
-        BRANCH_VALUE : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+        BRANCH, BRANCH_RETURN : IN STD_LOGIC;
+        BRANCH_VALUE, MEMORY_VALUE : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         PC_OUT, NEXT_PC : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
         INSTRUCTION : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
         IMMEDIATE_VALUE : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-        -- TWO_ONE_INSTRUCTION: OUT STD_LOGIC
         PC_WR_EN: OUT STD_LOGIC
         );
 END FetchStage;
@@ -50,6 +49,7 @@ BEGIN
 
         -- Send Signal
         NEXT_PC <= BRANCH_VALUE WHEN BRANCH = '1'
+        ELSE MEMORY_VALUE WHEN BRANCH_RETURN = '1'
         ELSE x"0000" & Data_From_Memory(31 DOWNTO 16) WHEN RST = '1'
         ELSE std_logic_vector(to_unsigned(to_integer(unsigned(PC_IN)) + 2,NEXT_PC'LENGTH )) WHEN Data_From_Memory(31 DOWNTO 26) = "011010" OR Data_From_Memory(31 DOWNTO 26) = "011101" OR Data_From_Memory(31 DOWNTO 26) = "011110" OR Data_From_Memory(31 DOWNTO 26) = "011111" 
         ELSE std_logic_vector(to_unsigned(to_integer(unsigned(PC_IN)) + 1,NEXT_PC'LENGTH ));

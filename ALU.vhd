@@ -9,6 +9,7 @@ ENTITY ALU IS
         A,B: IN STD_LOGIC_VECTOR (n-1 DOWNTO 0);
         SEL: IN STD_LOGIC_VECTOR (3 DOWNTO 0);
         SHIFT: IN STD_LOGIC_VECTOR (4 DOWNTO 0);
+        BRANCH_TYPE: IN STD_LOGIC_VECTOR (1 DOWNTO 0);
         FLAG : INOUT STD_LOGIC_VECTOR (2 DOWNTO 0);
         C : OUT STD_LOGIC_VECTOR (n-1 DOWNTO 0);
         FLAG_EN,RST : IN STD_LOGIC);
@@ -63,21 +64,21 @@ BEGIN
     C <= (OTHERS => '0') WHEN RST = '1'
         ELSE ALU_OUT;
 
-    FLAG(0) <=  CARRY_OUT   WHEN (SEL = b"1010" OR SEL = b"1011" OR SEL = b"0101" OR SEL = b"0110") AND FLAG_EN = '1'
+    FLAG(0) <=  '0'         WHEN RST = '1' OR (SEL = b"0010" AND FLAG_EN = '1') OR (BRANCH_TYPE = "11" AND FALLING_EDGE(CLK))
+        ELSE    CARRY_OUT   WHEN (SEL = b"1010" OR SEL = b"1011" OR SEL = b"0101" OR SEL = b"0110") AND FLAG_EN = '1'
         ELSE    B(N-1)      WHEN SEL = b"1000" AND FLAG_EN = '1'
         ELSE    B(0)        WHEN SEL = b"1001" AND FLAG_EN = '1'
         ELSE    B(N-SH)     WHEN SEL = b"1110" AND FLAG_EN = '1' AND SH /= 0
         ELSE    B(SH-1)     WHEN SEL = b"1111" AND FLAG_EN = '1' AND SH /= 0
         ELSE    '1'         WHEN SEL = b"0001" AND FLAG_EN = '1'
-        ELSE    '0'         WHEN RST = '1' OR (SEL = b"0010" AND FLAG_EN = '1')
         ELSE    FLAG(0);
 
-    FLAG(1) <= '1' WHEN ALU_OUT=ZERO  AND FLAG_EN = '1' 
-        ELSE '0' WHEN  FLAG_EN = '1' OR RST = '1'
-        ELSE FLAG(1);
+    FLAG(1) <=  '0'     WHEN (RST = '1' OR (BRANCH_TYPE = "01" AND FALLING_EDGE(CLK)) ) OR (ALU_OUT /= ZERO  AND FLAG_EN = '1') 
+        ELSE    '1'     WHEN ALU_OUT=ZERO  AND FLAG_EN = '1' AND SEL /= b"0001" AND SEL /= b"0010"
+        ELSE    FLAG(1);
 
-    FLAG(2) <= ALU_OUT(N-1) WHEN FLAG_EN = '1'
-        ELSE '0'            WHEN RST = '1'
-        ELSE FLAG(2);
+    FLAG(2) <=  '0'          WHEN RST = '1' OR (BRANCH_TYPE = "10" AND FALLING_EDGE(CLK))
+    ELSE        ALU_OUT(N-1) WHEN FLAG_EN = '1'
+    ELSE FLAG(2);
 
 END ALU_arch;

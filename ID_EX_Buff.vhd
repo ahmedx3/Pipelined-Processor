@@ -36,4 +36,5 @@ BEGIN
 			CTRL_SIG_OUT    <=   CTRL_SIG_IN;
 		END IF;
 	END PROCESS;
+
 END arch_ID_EX;
